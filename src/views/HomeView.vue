@@ -10,6 +10,10 @@ const genre: Ref<string[]> = ref(['Selecciona uno', 'Masculino', 'Femenino', 'Ot
 const selectedGenero: Ref<string> = ref('')
 const otroGenero: Ref<string> = ref('')
 const errors: Ref<{ name: string}[]> = ref([]) 
+const errorApe: Ref<{ apellido: string}[]> = ref([]) 
+const errorEdad: Ref<{ edad: string}[]> = ref([])
+const errorGenero: Ref<{ genero: string}[]> = ref([])
+
 
 
 /* Realizar un formulario donde se valide lo siguiente:
@@ -26,15 +30,33 @@ const handleGeneroChange = () => {
 
 const validation = () => {
   errors.value = []
+  errorApe.value = []
+  errorEdad.value = []
+  errorGenero.value = []
 
-  if ((name.value.length < 5) || (name.value.length > 18)) {
+  if (edad.value < 0 || edad.value > 60) {
+    errorEdad.value.push({ edad: 'Edad no permitida' })    
+  }
+  if ((name.value.length < 5) || (name.value.length > 18 || name.value === '')) {
     errors.value.push({ name: 'Error de nombre' })    
   }
   if (name.value === apellido.value) {
-    errors.value.push({ name: 'No puedes poner tu nombre' })    
+    errorApe.value.push({ apellido: 'No puedes poner tu nombre en el apellido' })    
   }
-  if (edad.value < 0 || edad.value > 60) {
-    errors.value.push({ name: 'Edad no permitida' })    
+  if (selectedGenero.value === 'Selecciona uno') {
+    errorGenero.value.push({ genero: 'Selecciona un genero' })    
+  }
+  if (selectedGenero.value === 'Otro' && otroGenero.value === '') {
+    errorGenero.value.push({ genero: 'Ingresa un genero' })    
+  }
+  if (selectedGenero.value === 'Otro' && otroGenero.value.length < 5) {
+    errorGenero.value.push({ genero: 'Genero no permitido' })    
+  }
+  if (selectedGenero.value === 'Otro' && otroGenero.value.length > 18) {
+    errorGenero.value.push({ genero: 'Genero no permitido' })    
+  }
+  if (selectedGenero.value === 'Otro' && otroGenero.value === genero.value) {
+    errorGenero.value.push({ genero: 'Genero no permitido' })    
   }
 }
 
@@ -45,17 +67,20 @@ const validation = () => {
   <main>
     <h3>Nombre</h3>
     <div>
-      <input v-model="name" type="text" placeholder="Escribe tu nombre">
+      <input @input="validation" v-model="name" type="text" placeholder="Escribe tu nombre">
     </div>
+    <span v-for="(err, index) in errors" :key="index">{{ err.name }}</span>
     <span></span>
     <h3>Apellido</h3>
     <div>
-      <input v-model="apellido" type="text" placeholder="Escribe tu apellido">
+      <input @input="validation" v-model="apellido" type="text" placeholder="Escribe tu apellido">
     </div>
+    <span v-for="(err, index) in errorApe" :key="index">{{ err.apellido }}</span>
     <h3>Edad</h3>
     <div>
-      <input v-model="edad" type="number" placeholder="Escribe tu edad">
+      <input @input="validation" v-model="edad" type="number" placeholder="Escribe tu edad">
     </div>
+    <span v-for="(err, index) in errorEdad" :key="index">{{ err.edad }}</span>
     <h3>Genero</h3>
     <div>
       <select @change="handleGeneroChange"  v-model="genero">
@@ -63,22 +88,38 @@ const validation = () => {
       </select>
     </div>
     <div v-if="selectedGenero === 'Otro'">
-      <input v-model="otroGenero" type="text">
+      <input @input="validation" v-model="otroGenero" type="text">
+      <span v-for="(err, index) in errorGenero" :key="index">{{ err.genero }}</span>
     </div>
-    <button @click="validation">Validar</button>
-    
-    <h3>Errors</h3>
-    <span v-for="(err, index) in errors" :key="index">{{ err.name }}</span>
-    
-
-    <h3>Tus Datos son los siguientes</h3> {{ name }} {{ apellido }} {{ edad }} {{ selectedGenero }} {{ otroGenero }}
   </main>
 </template>
 
 <style scoped@>
-.error{
-  color: white;
-  background-color: red;
-  border: 1px solid black;
-}
+  main {
+    max-width: 600px;
+    margin: 0 auto;
+    font-family: 'Arial', sans-serif;
+  }
+
+  h3 {
+    margin-top: 20px;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+  }
+
+  span {
+    color: red;
+    display: block;
+    margin-bottom: 5px;
+  }
+  .error {
+    color: red;
+    margin-top: 5px;
+  }
 </style>
